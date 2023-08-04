@@ -7,11 +7,14 @@ name = "pypi"
 pre-commit = "*"
 fastapi = "*"
 uvicorn = "*"
-pydantic = "*"
 pydantic-settings = "*"
 sqlalchemy = "*"
 alembic = "*"
 psycopg2-binary = "*"
+pydantic = {extras = ["email"], version = "*"}
+asyncpg = "*"
+babel = "*"
+sqlalchemy-utils = "*"
 
 [dev-packages]
 flake8 = "*"

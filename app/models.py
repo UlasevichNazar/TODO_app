@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column
 from sqlalchemy import TIMESTAMP
 
-from app.database import Base
+from database.database import Base
 
 
 class AbstractBaseModel(Base):

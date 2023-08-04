@@ -12,6 +12,9 @@ class Setting(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
 
+    EMAIL: str
+    PASSWORD: str
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
