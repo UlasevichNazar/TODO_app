@@ -10,10 +10,10 @@ from pydantic import field_validator
 LETTER_MATCH_PATTERN = re.compile(r"^[a-zA-Zа-яА-Я\-]+$")
 
 
-class CreateUser(BaseModel):
+class CreateUserSchema(BaseModel):
     username: str = Field(max_length=60, min_length=1)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=24, description="user password")
     model_config = {
         "json_schema_extra": {
             "example": [
@@ -35,7 +35,7 @@ class CreateUser(BaseModel):
         return value
 
 
-class ShowUser(BaseModel):
+class ShowUserSchema(BaseModel):
     id: uuid.UUID
     username: str
     email: EmailStr
