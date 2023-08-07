@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import Field
 
-from app.schemas import TunedModel
+from app.schemas.base import TunedModel
 
 
 class TaskStatus(str, enum.Enum):

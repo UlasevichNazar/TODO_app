@@ -8,13 +8,13 @@ pre-commit = "*"
 fastapi = "*"
 uvicorn = "*"
 pydantic-settings = "*"
-sqlalchemy = "*"
 alembic = "*"
 psycopg2-binary = "*"
 pydantic = {extras = ["email"], version = "*"}
 asyncpg = "*"
 babel = "*"
 sqlalchemy-utils = "*"
+sqlalchemy = {extras = ["asyncio"], version = "*"}
 
 [dev-packages]
 flake8 = "*"

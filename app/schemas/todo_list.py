@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 from pydantic import Field
 
-from app.task.schemas import CreateTaskSchema
+from app.schemas.task import CreateTaskSchema
 
 
 class CreateTodoListSchema(BaseModel):

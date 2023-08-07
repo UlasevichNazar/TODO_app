@@ -1,12 +1,7 @@
 from fastapi import FastAPI
 
-from app.user.controllers import user_router
+from app.controllers.user import user_router
 
 app = FastAPI()
 
 app.include_router(user_router)
-
-
-@app.get("/")
-async def test():
-    return "ok"
