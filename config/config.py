@@ -15,6 +15,8 @@ class Setting(BaseSettings):
     EMAIL: str
     PASSWORD: str
 
+    DATABASE_URL: str
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
