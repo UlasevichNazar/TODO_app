@@ -1,0 +1,27 @@
+version: "3.11"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web
+    entrypoint: '/fastapi-entrypoint.sh'
+    ports:
+      - "${FASTAPI_PORT}:8080"
+    volumes:
+      - .:/app
+    env_file:
+      - .env/
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    user: root
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
