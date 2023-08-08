@@ -3,14 +3,17 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 
+from app.models.user import User
 from app.schemas.user import CreateUserSchema
 from app.schemas.user import DeleteUserSchema
 from app.schemas.user import ShowUserSchema
 from app.schemas.user import UpdateUserRequestSchema
 from app.schemas.user import UpdateUserResponseSchema
+from app.services.auth import get_current_user_from_token
 from app.services.user import create_new_user
 from app.services.user import deleting_user
 from app.services.user import get_all_users
@@ -19,16 +22,20 @@ from app.services.user import update_user
 
 logger = getLogger(__name__)
 
-user_router = APIRouter(prefix="/user")
+user_router = APIRouter(prefix="/user", tags=["user"])
 
 
 @user_router.get("/", response_model=List[ShowUserSchema])
-async def get_all_users_from_db():
+async def get_all_users_from_db(
+    current_user: User = Depends(get_current_user_from_token),
+):
     return await get_all_users()
 
 
 @user_router.get("/{user_id}", response_model=ShowUserSchema)
-async def get_user_by_id(user_id: UUID) -> ShowUserSchema:
+async def get_user_by_id(
+    user_id: UUID, current_user: User = Depends(get_current_user_from_token)
+) -> ShowUserSchema:
     user = await get_user(user_id)
     if user is None:
         raise HTTPException(
@@ -44,7 +51,9 @@ async def create_user(body: CreateUserSchema):
 
 @user_router.patch("/{user_id}", response_model=UpdateUserResponseSchema)
 async def update_user_by_id(
-    user_id: UUID, body: UpdateUserRequestSchema
+    user_id: UUID,
+    body: UpdateUserRequestSchema,
+    current_user: User = Depends(get_current_user_from_token),
 ) -> UpdateUserResponseSchema:
     updated_user_params = body.model_dump(exclude_none=True)
     if updated_user_params == {}:
@@ -68,7 +77,9 @@ async def update_user_by_id(
 
 
 @user_router.delete("/{user_id}", response_model=DeleteUserSchema)
-async def delete_user_by_id(user_id: UUID) -> DeleteUserSchema:
+async def delete_user_by_id(
+    user_id: UUID, current_user: User = Depends(get_current_user_from_token)
+) -> DeleteUserSchema:
     deleted_user_id = await deleting_user(user_id)
     if deleted_user_id is None:
         raise HTTPException(

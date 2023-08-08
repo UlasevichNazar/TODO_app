@@ -18,14 +18,12 @@ class CreateTaskSchema(TunedModel):
     todo_list_id: int
     model_config = {
         "json_schema_extra": {
-            "example": [
-                {
-                    "name": "create something",
-                    "description": "we should to create somethings",
-                    "status": "In progress",
-                    "todo_list_id": 1,
-                }
-            ]
+            "example": {
+                "name": "create something",
+                "description": "we should to create somethings",
+                "status": "In progress",
+                "todo_list_id": 1,
+            }
         }
     }
 

@@ -15,6 +15,9 @@ asyncpg = "*"
 babel = "*"
 sqlalchemy-utils = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
+passlib = "*"
+python-jose = "*"
+python-multipart = "*"
 
 [dev-packages]
 flake8 = "*"

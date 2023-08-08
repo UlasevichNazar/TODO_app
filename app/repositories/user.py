@@ -40,3 +40,10 @@ class UserRepository(BaseRepository):
             .returning(User.id)
         )
         return await self.delete(query)
+
+    async def get_user_by_username(self, username: str) -> Optional[User]:
+        query = select(User).where(User.username == username)
+        res = await self.db_session.execute(query)
+        user = res.fetchone()
+        if user is not None:
+            return user[0]

@@ -5,6 +5,7 @@ from uuid import UUID
 from app.repositories.user import UserRepository
 from app.schemas.user import CreateUserSchema
 from app.schemas.user import ShowUserSchema
+from app.services.hashing import Hasher
 from database.database import async_session
 
 
@@ -29,18 +30,26 @@ async def get_user(user_id: UUID) -> Optional[ShowUserSchema]:
                 )
 
 
+async def get_user_by_username_for_auth(username: str):
+    async with async_session() as session:
+        async with session.begin():
+            user = UserRepository(session)
+            return await user.get_user_by_username(username=username)
+
+
 async def create_new_user(body: CreateUserSchema) -> ShowUserSchema:
     async with async_session() as session:
         async with session.begin():
             new_user = UserRepository(session)
             user = await new_user.create_user(
-                username=body.username, email=body.email, password=body.password
+                username=body.username,
+                email=body.email,
+                password=Hasher.get_password_hash(body.password),
             )
             return ShowUserSchema(
                 id=user.id,
                 username=user.username,
                 email=user.email,
-                password=user.password,
                 is_active=user.is_active,
             )
 
