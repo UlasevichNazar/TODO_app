@@ -13,8 +13,8 @@ from app.models.base import AbstractBaseModel
 
 class Task(AbstractBaseModel):
     __tablename__ = "tasks"
-    IN_PROGRESS = "In progress"
     DONE = "Done"
+    IN_PROGRESS = "In progress"
 
     STATUSES = [("in_progress", IN_PROGRESS), ("done", DONE)]
     task_id = Column(
