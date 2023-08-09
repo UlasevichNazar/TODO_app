@@ -14,10 +14,12 @@ from app.schemas.user import ShowUserSchema
 from app.schemas.user import UpdateUserRequestSchema
 from app.schemas.user import UpdateUserResponseSchema
 from app.services.auth import get_current_user_from_token
+from app.services.user import check_user_permissions
 from app.services.user import create_new_user
 from app.services.user import deleting_user
 from app.services.user import get_all_users
 from app.services.user import get_user
+from app.services.user import get_user_by_id_for_del
 from app.services.user import update_user
 
 logger = getLogger(__name__)
@@ -80,9 +82,22 @@ async def update_user_by_id(
 async def delete_user_by_id(
     user_id: UUID, current_user: User = Depends(get_current_user_from_token)
 ) -> DeleteUserSchema:
+    user_for_deletion = await get_user_by_id_for_del(user_id)
+    if user_for_deletion is None:
+        raise HTTPException(
+            status_code=404, detail=f"User with {user_id} is not found."
+        )
+    if not await check_user_permissions(
+        target_user=user_for_deletion, current_user=current_user
+    ):
+        print(1)
+        raise HTTPException(status_code=403, detail="Forbidden.")
+
     deleted_user_id = await deleting_user(user_id)
+    print(deleted_user_id)
     if deleted_user_id is None:
         raise HTTPException(
             status_code=404, detail=f"User with {user_id} is not found."
         )
+
     return DeleteUserSchema(delete_user_id=deleted_user_id)

@@ -20,8 +20,10 @@ class UserRepository(BaseRepository):
         query = select(User).where(User.id == user_id)
         return await self.get_by_id(query)
 
-    async def create_user(self, username: str, email: str, password: str) -> User:
-        new_user = User(username=username, email=email, password=password)
+    async def create_user(
+        self, username: str, email: str, password: str, roles: list
+    ) -> User:
+        new_user = User(username=username, email=email, password=password, roles=roles)
         return await self.create(new_user)
 
     async def updated_user(self, user_id: UUID, **kwargs) -> Optional[UUID]:
