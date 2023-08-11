@@ -3,7 +3,6 @@ import uuid
 from typing import List
 
 from fastapi import HTTPException
-from pydantic import BaseModel
 from pydantic import EmailStr
 from pydantic import Field
 from pydantic import field_validator
@@ -51,7 +50,7 @@ class ShowAdminSchema(TunedModel):
     roles: List[str]
 
 
-class UpdateUserRequestSchema(BaseModel):
+class UpdateUserRequestSchema(TunedModel):
     username: str = Field(description="username")
     email: EmailStr = Field(description="user email")
 

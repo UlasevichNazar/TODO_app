@@ -4,7 +4,7 @@ from app.models.user import Roles
 from app.models.user import User
 
 
-class PermissionsService:
+class UserPermissionsService:
     @staticmethod
     async def check_user_permissions(target_user: User, current_user: User) -> bool:
         if target_user.id == current_user.id:

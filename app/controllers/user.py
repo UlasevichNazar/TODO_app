@@ -11,13 +11,13 @@ from fastapi import Response
 from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
+from app.permissions.user import UserPermissionsService
 from app.schemas.user import CreateUserSchema
 from app.schemas.user import DeleteUserSchema
 from app.schemas.user import ShowAdminSchema
 from app.schemas.user import ShowUserSchema
 from app.schemas.user import UpdateUserRequestSchema
 from app.services.auth import get_current_user_from_token
-from app.services.permissions import PermissionsService
 from app.services.user import create_admin
 from app.services.user import create_new_user
 from app.services.user import deleting_user
@@ -50,7 +50,7 @@ async def get_user_by_id(
         raise HTTPException(
             status_code=404, detail=f"User with {user_id} is not found."
         )
-    if not await PermissionsService.check_user_permissions(
+    if not await UserPermissionsService.check_user_permissions(
         target_user=user, current_user=current_user
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")
@@ -82,7 +82,7 @@ async def update_user_by_id(
     current_user: User = Depends(get_current_user_from_token),
 ):
     user = await get_user(user_id)
-    if not await PermissionsService.check_user_permissions(
+    if not await UserPermissionsService.check_user_permissions(
         target_user=user, current_user=current_user
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")
@@ -99,7 +99,7 @@ async def delete_user_by_id(
         raise HTTPException(
             status_code=404, detail=f"User with {user_id} is not found."
         )
-    if not await PermissionsService.check_user_permissions(
+    if not await UserPermissionsService.check_user_permissions(
         target_user=user_for_deletion, current_user=current_user
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")

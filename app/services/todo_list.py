@@ -31,6 +31,8 @@ async def create_new_todo_list(
                     email=user.email,
                     is_active=user.is_active,
                 ),
+                created_at=todo_list.created_at,
+                updated_at=todo_list.updated_at,
             )
 
 
@@ -45,6 +47,8 @@ async def get_all_todo_lists(user: User) -> List[ShowTodoListSchema]:
                     id=user_list.id,
                     name=user_list.name,
                     description=user_list.description,
+                    created_at=user_list.created_at,
+                    updated_at=user_list.updated_at,
                 )
                 for user_list in user_lists
             ]
