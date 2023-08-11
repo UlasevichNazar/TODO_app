@@ -1,9 +1,9 @@
 import re
 import uuid
-from typing import Optional
+from typing import List
 
 from fastapi import HTTPException
-from pydantic import constr
+from pydantic import BaseModel
 from pydantic import EmailStr
 from pydantic import Field
 from pydantic import field_validator
@@ -43,13 +43,17 @@ class ShowUserSchema(TunedModel):
     is_active: bool
 
 
-class UpdateUserResponseSchema(TunedModel):
-    user_id: uuid.UUID
+class ShowAdminSchema(TunedModel):
+    id: uuid.UUID
+    username: str
+    email: EmailStr
+    is_active: bool
+    roles: List[str]
 
 
-class UpdateUserRequestSchema(TunedModel):
-    username: Optional[constr(min_length=1, strip_whitespace=True)] = None
-    email: Optional[EmailStr]
+class UpdateUserRequestSchema(BaseModel):
+    username: str = Field(description="username")
+    email: EmailStr = Field(description="user email")
 
     @field_validator("username")
     def validate_name(cls, value):

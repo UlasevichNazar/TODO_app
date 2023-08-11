@@ -1,16 +1,16 @@
-"""second
+"""first
 
-Revision ID: f3f5a54dadbc
+Revision ID: 19eefc2bd7d6
 Revises:
-Create Date: 2023-08-07 10:46:45.585108
+Create Date: 2023-08-11 10:07:48.886179
 
 """
 import sqlalchemy as sa
-import sqlalchemy_utils
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "f3f5a54dadbc"
+revision = "19eefc2bd7d6"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,7 @@ def upgrade() -> None:
         sa.Column("Email", sa.String(), nullable=False),
         sa.Column("Password", sa.String(), nullable=False),
         sa.Column("Is_active", sa.Boolean(), nullable=True),
+        sa.Column("User role", postgresql.ARRAY(sa.String()), nullable=False),
         sa.Column("Created at", sa.TIMESTAMP(), nullable=True),
         sa.Column("Updated at", sa.TIMESTAMP(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
@@ -33,7 +34,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "todo_lists",
-        sa.Column("list_id", sa.UUID(), nullable=False),
+        sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("Name", sa.String(length=100), nullable=False),
         sa.Column("Description", sa.Text(), nullable=True),
         sa.Column("user_id", sa.UUID(), nullable=False),
@@ -43,7 +44,7 @@ def upgrade() -> None:
             ["user_id"],
             ["users.id"],
         ),
-        sa.PrimaryKeyConstraint("list_id"),
+        sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "tasks",
@@ -51,18 +52,14 @@ def upgrade() -> None:
         sa.Column("Name", sa.String(length=100), nullable=False),
         sa.Column("Description", sa.Text(), nullable=True),
         sa.Column(
-            "status",
-            sqlalchemy_utils.types.choice.ChoiceType(
-                [("in_progress", "In progress"), ("done", "Done")]
-            ),
-            nullable=True,
+            "status", sa.Enum("IN_PROGRESS", "DONE", name="taskstatus"), nullable=True
         ),
         sa.Column("todo_list_id", sa.UUID(), nullable=False),
         sa.Column("Created at", sa.TIMESTAMP(), nullable=True),
         sa.Column("Updated at", sa.TIMESTAMP(), nullable=True),
         sa.ForeignKeyConstraint(
             ["todo_list_id"],
-            ["todo_lists.list_id"],
+            ["todo_lists.id"],
         ),
         sa.PrimaryKeyConstraint("Task id"),
     )

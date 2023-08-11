@@ -1,20 +1,15 @@
-import enum
 from typing import Optional
 
 from pydantic import Field
 
+from app.models.task import TaskStatus
 from app.schemas.base import TunedModel
-
-
-class TaskStatus(str, enum.Enum):
-    in_progress = "In progress"
-    done = "Done"
 
 
 class CreateTaskSchema(TunedModel):
     name: str = Field(max_length=100)
     description: Optional[str] = None
-    status: TaskStatus = TaskStatus.in_progress
+    status: Optional[TaskStatus] = TaskStatus.IN_PROGRESS
     todo_list_id: int
     model_config = {
         "json_schema_extra": {
