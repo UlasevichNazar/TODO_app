@@ -11,7 +11,6 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.base import AbstractBaseModel
-from app.models.user import User
 
 Entity = TypeVar("Entity", bound=AbstractBaseModel)
 
@@ -40,11 +39,9 @@ class BaseRepository:
         await self.db_session.flush()
         return res
 
-    async def delete(self, model: Type[Entity], user_id: UUID) -> Optional[UUID]:
+    async def delete(self, model: Type[Entity], instance_id: UUID) -> Optional[UUID]:
         res = await self.db_session.execute(
-            delete(User)
-            .where(and_(User.id == user_id, User.is_active == True))
-            .returning(User.id)
+            delete(model).where(and_(model.id == instance_id)).returning(model.id)
         )
         deleted_entity = res.scalar()
         if deleted_entity is not None:

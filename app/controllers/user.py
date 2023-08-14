@@ -105,9 +105,5 @@ async def delete_user_by_id(
         raise HTTPException(status_code=403, detail="Forbidden.")
 
     deleted_user_id = await deleting_user(user_id)
-    if deleted_user_id is None:
-        raise HTTPException(
-            status_code=404, detail=f"User with {user_id} is not found."
-        )
 
     return DeleteUserSchema(delete_user_id=deleted_user_id)

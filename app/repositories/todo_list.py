@@ -21,3 +21,9 @@ class TodoListRepository(BaseRepository):
 
     async def get_list_by_id(self, list_id: UUID) -> Optional[ToDoList]:
         return await self.get_by_id(ToDoList, list_id)
+
+    async def update_list_by_user(self, instance: ToDoList, values: dict):
+        return await self.update(ToDoList, instance, values)
+
+    async def deleting_todo(self, list_id: UUID) -> Optional[UUID]:
+        return await self.delete(ToDoList, list_id)
