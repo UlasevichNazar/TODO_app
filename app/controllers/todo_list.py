@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Response
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
@@ -71,12 +72,21 @@ async def update_todo_list(
     current_user: User = Depends(get_current_user_from_token),
 ):
     todo_list = await get_todo_list(list_id)
+    if todo_list is None:
+        raise HTTPException(
+            status_code=404, detail=f"Todo List with id - {list_id} is not found."
+        )
     if not await TodoListPermissionsService.check_user_permissions(
         todo_list=todo_list, current_user=current_user
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")
-    await update_list(body, todo_list)
-    return Response("User successfully updated", status_code=201)
+    try:
+        await update_list(body, todo_list)
+        return Response("Todo List successfully updated", status_code=201)
+    except IntegrityError as err:
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    except RequestValidationError:
+        raise HTTPException(status_code=422, detail="Wrong data")
 
 
 @todo_list_router.delete("/{list_id}", response_model=DeleteTodoListSchema)

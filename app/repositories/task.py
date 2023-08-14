@@ -4,6 +4,7 @@ from typing import Tuple
 from uuid import UUID
 
 from sqlalchemy import and_
+from sqlalchemy import Result
 from sqlalchemy import select
 
 from app.models.task import Task
@@ -30,3 +31,6 @@ class TaskRepository(BaseRepository):
         )
         res = await self.db_session.execute(query)
         return res.scalar_one_or_none()
+
+    async def updating_task_by_user(self, instance: Task, **kwargs) -> Result[Task]:
+        return await self.update(Task, instance, kwargs)

@@ -1,3 +1,4 @@
+from typing import Any
 from typing import List
 from typing import Optional
 from typing import Type
@@ -6,6 +7,7 @@ from uuid import UUID
 
 from sqlalchemy import and_
 from sqlalchemy import delete
+from sqlalchemy import Result
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,7 +34,7 @@ class BaseRepository:
         await self.db_session.flush()
         return entity
 
-    async def update(self, model, instance, values: dict):
+    async def update(self, model, instance, values: dict) -> Result[Any]:
         res = await self.db_session.execute(
             (update(model).where(model.id == instance.id).values(**values))
         )

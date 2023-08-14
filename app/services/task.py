@@ -2,6 +2,8 @@ from typing import List
 from typing import Optional
 from uuid import UUID
 
+from sqlalchemy import Result
+
 from app.models.task import Task
 from app.repositories.task import TaskRepository
 from app.schemas.task import CreateTaskSchema
@@ -56,3 +58,14 @@ async def get_task(
             todo_list_ids = tuple(user_list.id for user_list in todo_lists)
             task = await tasks_repo.get_user_task(task_id, todo_list_ids)
             return task
+
+
+async def update_user_task(task: Task, updated_params: dict) -> Result[Task]:
+    async with async_session() as session:
+        async with session.begin():
+            updating_task = TaskRepository(session)
+            updated_task = await updating_task.updating_task_by_user(
+                task, **updated_params
+            )
+            session.commit()
+            return updated_task
