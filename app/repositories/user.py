@@ -2,10 +2,14 @@ from typing import List
 from typing import Optional
 from uuid import UUID
 
+from sqlalchemy import Result
 from sqlalchemy import select
 
+from app.models.user import Roles
 from app.models.user import User
 from app.repositories.base import BaseRepository
+from app.schemas.user import CreateUserSchema
+from app.services.hashing import Hasher
 
 
 class UserRepository(BaseRepository):
@@ -15,14 +19,21 @@ class UserRepository(BaseRepository):
     async def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         return await self.get_by_id(User, user_id)
 
-    async def create_user(
-        self, username: str, email: str, password: str, roles: list
-    ) -> User:
-        new_user = User(username=username, email=email, password=password, roles=roles)
+    async def create_user(self, values: CreateUserSchema) -> User:
+        values_for_create = values.model_dump()
+        values_for_create["password"] = Hasher.get_password_hash(values.password)
+        new_user = User(**values_for_create)
         return await self.create(new_user)
 
-    async def updated_user(self, instance: User, values: dict):
-        return await self.update(User, instance, values)
+    async def create_admin_user(self, values: CreateUserSchema) -> User:
+        values_for_create = values.model_dump()
+        values_for_create["roles"] = [Roles.ROLE_ADMIN]
+        values_for_create["password"] = Hasher.get_password_hash(values.password)
+        new_user = User(**values_for_create)
+        return await self.create(new_user)
+
+    async def updated_user(self, instance: User, **kwargs) -> Result[User]:
+        return await self.update(User, instance, kwargs)
 
     async def delete_user(self, user_id: UUID) -> Optional[UUID]:
         return await self.delete(User, user_id)

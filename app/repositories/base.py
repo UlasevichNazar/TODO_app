@@ -29,7 +29,7 @@ class BaseRepository:
         res = await self.db_session.execute(select(model).filter_by(id=param))
         return res.scalar()
 
-    async def create(self, entity: Type[Entity]) -> Entity:
+    async def create(self, entity) -> Entity:
         self.db_session.add(entity)
         await self.db_session.flush()
         return entity

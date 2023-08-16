@@ -9,13 +9,12 @@ from sqlalchemy import select
 
 from app.models.task import Task
 from app.repositories.base import BaseRepository
+from app.schemas.task import CreateTaskSchema
 
 
 class TaskRepository(BaseRepository):
-    async def create_new_task(
-        self, name: str, description: str, todo_list_id: UUID
-    ) -> Task:
-        new_task = Task(name=name, description=description, todo_list_id=todo_list_id)
+    async def create_new_task(self, values: CreateTaskSchema) -> Task:
+        new_task = Task(**values.model_dump())
         return await self.create(new_task)
 
     async def get_tasks(self, todo_list_ids: Tuple[UUID]) -> List[Task]:
@@ -34,3 +33,6 @@ class TaskRepository(BaseRepository):
 
     async def updating_task_by_user(self, instance: Task, **kwargs) -> Result[Task]:
         return await self.update(Task, instance, kwargs)
+
+    async def deleting_task_by_user(self, task_id: UUID) -> Optional[UUID]:
+        return await self.delete(Task, task_id)

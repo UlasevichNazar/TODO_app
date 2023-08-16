@@ -25,5 +25,5 @@ class User(AbstractBaseModel):
     email = Column("Email", String, unique=True, nullable=False)
     password = Column("Password", String, nullable=False)
     is_active = Column("Is_active", Boolean, default=True)
-    roles = Column("User role", ARRAY(String), nullable=False)
+    roles = Column("User role", ARRAY(String), nullable=False, default=Roles.ROLE_USER)
     todo_lists = relationship("ToDoList", back_populates="user")

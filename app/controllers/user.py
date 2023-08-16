@@ -1,5 +1,4 @@
 from logging import getLogger
-from typing import Any
 from typing import List
 from typing import Union
 from uuid import UUID
@@ -7,9 +6,12 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Request
 from fastapi import Response
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 
+from app.exceptions import validation_exception_handler
 from app.models.user import User
 from app.permissions.user import UserPermissionsService
 from app.schemas.user import CreateUserSchema
@@ -62,8 +64,9 @@ async def create_user(body: CreateUserSchema):
     try:
         return await create_new_user(body)
     except IntegrityError as err:
-        logger.info(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    except RequestValidationError as exc:
+        return await validation_exception_handler(Request, exc)
 
 
 @user_router.post("/admin", response_model=ShowAdminSchema)
@@ -71,23 +74,36 @@ async def create_admin_user(body: CreateUserSchema):
     try:
         return await create_admin(body)
     except IntegrityError as err:
-        logger.info(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    except RequestValidationError as exc:
+        return await validation_exception_handler(Request, exc)
 
 
-@user_router.patch("/{user_id}", response_model=Any)
+@user_router.patch("/{user_id}")
 async def update_user_by_id(
     user_id: UUID,
     body: UpdateUserRequestSchema,
     current_user: User = Depends(get_current_user_from_token),
 ):
+    updated_params = body.model_dump(exclude_unset=True)
+    if updated_params == {}:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one parameter for task update info should be provided",
+        )
     user = await get_user(user_id)
     if not await UserPermissionsService.check_user_permissions(
         target_user=user, current_user=current_user
     ):
         raise HTTPException(status_code=403, detail="Forbidden.")
-    await update_user(body, user.id)
-    return Response("User successfully updated", status_code=201)
+    try:
+        await update_user(updated_params, user.id)
+    except IntegrityError as err:
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    except RequestValidationError as exc:
+        return await validation_exception_handler(Request, exc)
+    else:
+        return Response("User successfully updated", status_code=201)
 
 
 @user_router.delete("/{user_id}", response_model=DeleteUserSchema)

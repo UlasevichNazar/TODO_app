@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import Field
@@ -73,8 +74,8 @@ class ShowTodoListSchema(TunedModel):
 
 
 class UpdateTodoListSchema(TunedModel):
-    name: str = Field(max_length=100)
-    description: str
+    name: Optional[str] = Field(default=None, description="name", max_length=100)
+    description: Optional[str] = Field(default=None, description="description")
     model_config = {
         "json_schema_extra": {
             "example": {

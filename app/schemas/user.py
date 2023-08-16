@@ -1,6 +1,7 @@
 import re
 import uuid
 from typing import List
+from typing import Optional
 
 from fastapi import HTTPException
 from pydantic import EmailStr
@@ -72,8 +73,8 @@ class ShowAdminSchema(TunedModel):
 
 
 class UpdateUserRequestSchema(TunedModel):
-    username: str = Field(description="username")
-    email: EmailStr = Field(description="user email")
+    username: Optional[str] = Field(default=None, max_length=60, description="username")
+    email: Optional[EmailStr] = Field(default=None, description="user email")
     model_config = {
         "json_schema_extra": {
             "example": {
