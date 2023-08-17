@@ -14,13 +14,16 @@ from app.schemas.user import ShowUserSchema
 from database.database import async_session
 
 
-async def create_new_todo_list(
-    body: CreateTodoListSchema, user_data: ShowUserSchema
-) -> ShowTodoListForCreateSchema:
-    async with async_session() as session:
-        async with session.begin():
-            new_list = TodoListRepository(session)
-            todo_list = await new_list.create_todo(user_id=user_data.id, values=body)
+class TodoListService:
+    @staticmethod
+    async def create_new_todo_list(
+        body: CreateTodoListSchema, user_data: ShowUserSchema
+    ) -> ShowTodoListForCreateSchema:
+        async with async_session() as session:
+            creation_todo = await TodoListService._create_todo_list(
+                user_id=user_data.id, values=body
+            )
+            todo_list = await TodoListRepository(session).create_todo(creation_todo)
             session.commit()
             return ShowTodoListForCreateSchema(
                 id=todo_list.id,
@@ -31,26 +34,34 @@ async def create_new_todo_list(
                 updated_at=todo_list.updated_at,
             )
 
+    @staticmethod
+    async def _create_todo_list(
+        values: CreateTodoListSchema, user_id: UUID
+    ) -> ToDoList:
+        values_for_create = values.model_dump()
+        values_for_create["user_id"] = user_id
+        new_list = ToDoList(**values_for_create)
+        return new_list
 
-async def get_all_todo_lists(user: User) -> List[ShowTodoListSchema]:
-    async with async_session() as session:
-        async with session.begin():
+    @staticmethod
+    async def get_all_todo_lists(user: User) -> List[ShowTodoListSchema]:
+        async with async_session() as session:
             lists_repo = TodoListRepository(session)
             user_lists = await lists_repo.get_all_user_lists(user.id)
             return [user_list for user_list in user_lists]
 
-
-async def get_todo_list(list_id: UUID) -> Optional[ToDoList]:
-    async with async_session() as session:
-        async with session.begin():
+    @staticmethod
+    async def get_todo_list(list_id: UUID) -> Optional[ToDoList]:
+        async with async_session() as session:
             list_repo = TodoListRepository(session)
             list = await list_repo.get_list_by_id(list_id)
             return list
 
-
-async def update_list(updated_params: dict, todo_list: ToDoList) -> Result[ToDoList]:
-    async with async_session() as session:
-        async with session.begin():
+    @staticmethod
+    async def update_list(
+        updated_params: dict, todo_list: ToDoList
+    ) -> Result[ToDoList]:
+        async with async_session() as session:
             updating_list = TodoListRepository(session)
             updated_todo_list = await updating_list.update_list_by_user(
                 todo_list, **updated_params
@@ -58,10 +69,9 @@ async def update_list(updated_params: dict, todo_list: ToDoList) -> Result[ToDoL
             session.commit()
             return updated_todo_list
 
-
-async def deleting_todo_list(list_id: UUID) -> Optional[UUID]:
-    async with async_session() as session:
-        async with session.begin():
+    @staticmethod
+    async def deleting_todo_list(list_id: UUID) -> Optional[UUID]:
+        async with async_session() as session:
             deleting_list = TodoListRepository(session)
             deleting_list_id = await deleting_list.deleting_todo(list_id=list_id)
             session.commit()
