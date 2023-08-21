@@ -18,6 +18,7 @@ sqlalchemy = {extras = ["asyncio"], version = "*"}
 passlib = "*"
 python-jose = "*"
 python-multipart = "*"
+ujson = "*"
 
 [dev-packages]
 flake8 = "*"

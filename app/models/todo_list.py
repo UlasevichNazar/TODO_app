@@ -27,4 +27,6 @@ class ToDoList(AbstractBaseModel):
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
     user: Mapped["User"] = relationship("User", back_populates="todo_lists")
-    tasks: Mapped["Task"] = relationship("Task", back_populates="todo_list")
+    tasks: Mapped["Task"] = relationship(
+        "Task", back_populates="todo_list", cascade="all, delete-orphan"
+    )

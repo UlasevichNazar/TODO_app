@@ -1,20 +1,33 @@
-from fastapi.exceptions import RequestValidationError
-from starlette.responses import PlainTextResponse
+class BaseAppException(Exception):
+    DEFAULT_STATUS_CODE = 500
+    DEFAULT_ERROR_MESSAGE = "Unexpected error occurred"
 
-from app import app
+    def __init__(
+        self, detail: str | None = None, status_code: int | None = None
+    ) -> None:
+        self.error_code = status_code or self.DEFAULT_STATUS_CODE
+        self.detail = detail or self.DEFAULT_ERROR_MESSAGE
 
 
-class ExceptionService:
-    @staticmethod
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request, exc):
-        error_msg = exc.errors()[0]["msg"]
-        return PlainTextResponse(f"Wrong client data: {error_msg}", status_code=422)
+class ObjectNotFoundException(BaseAppException):
+    DEFAULT_STATUS_CODE = 404
+    DEFAULT_ERROR_MESSAGE = "No such object was found. Check the details you entered."
 
-    @staticmethod
-    async def get_error_message(message: str):
-        lines = message.split("\n")
-        detail_line = next((line for line in lines if "DETAIL:" in line), None)
-        if detail_line:
-            detail = detail_line.split("DETAIL:")[1].strip()
-            return detail
+
+class PermissionDeniedException(BaseAppException):
+    DEFAULT_STATUS_CODE = 403
+    DEFAULT_ERROR_MESSAGE = (
+        "Forbidden. You dont have any permissions to perform this action."
+    )
+
+
+class AutorizingException(BaseAppException):
+    DEFAULT_STATUS_CODE = 401
+    DEFAULT_ERROR_MESSAGE = "Could not validate credentials"
+
+
+class EmptyParametersException(BaseAppException):
+    DEFAULT_STATUS_CODE = 422
+    DEFAULT_ERROR_MESSAGE = (
+        "At least one parameter for task update info should be provided"
+    )

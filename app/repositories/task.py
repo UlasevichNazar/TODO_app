@@ -37,5 +37,5 @@ class TaskRepository(BaseRepository):
     async def updating_task_by_user(self, instance: Task, **kwargs) -> Result[Task]:
         return await self._update(Task, instance, kwargs)
 
-    async def deleting_task_by_user(self, task_id: UUID) -> Optional[UUID]:
-        return await self._delete(Task, task_id)
+    async def deleting_task_by_user(self, task: Task) -> None:
+        return await self._delete(task)

@@ -24,7 +24,7 @@ class TodoListService:
                 user_id=user_data.id, values=body
             )
             todo_list = await TodoListRepository(session).create_todo(creation_todo)
-            session.commit()
+            await session.commit()
             return ShowTodoListForCreateSchema(
                 id=todo_list.id,
                 name=todo_list.name,
@@ -66,13 +66,13 @@ class TodoListService:
             updated_todo_list = await updating_list.update_list_by_user(
                 todo_list, **updated_params
             )
-            session.commit()
+            await session.commit()
             return updated_todo_list
 
     @staticmethod
-    async def deleting_todo_list(list_id: UUID) -> Optional[UUID]:
+    async def deleting_todo_list(todo_list: ToDoList) -> None:
         async with async_session() as session:
             deleting_list = TodoListRepository(session)
-            deleting_list_id = await deleting_list.deleting_todo(list_id=list_id)
-            session.commit()
-            return deleting_list_id
+            deleting_list_obj = await deleting_list.deleting_todo(todo_list=todo_list)
+            await session.commit()
+            return deleting_list_obj

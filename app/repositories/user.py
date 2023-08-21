@@ -26,8 +26,8 @@ class UserRepository(BaseRepository):
     async def updated_user(self, instance: User, **kwargs) -> Result[User]:
         return await self._update(User, instance, kwargs)
 
-    async def delete_user(self, user_id: UUID) -> Optional[UUID]:
-        return await self._delete(User, user_id)
+    async def delete_user(self, user: User) -> None:
+        return await self._delete(user)
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
         query = select(User).where(User.username == username).fetch(count=1)

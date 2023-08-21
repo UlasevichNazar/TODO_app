@@ -4,13 +4,12 @@ from typing import Optional
 from typing import Union
 
 from fastapi import Depends
-from fastapi import status
-from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
 from jose import JWTError
 
+from app.exceptions.exceptions import AutorizingException
 from app.models.user import User
 from app.services.user import UserService
 from app.utils.password_hasher import PasswordService
@@ -31,16 +30,12 @@ class AuthService:
 
     @staticmethod
     async def authenticate_user(form_data: OAuth2PasswordRequestForm):
-        # with async_session() as session:
         user = await AuthService._authenticate_user(
             username=form_data.username,
             password=form_data.password,
         )
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-            )
+            raise AutorizingException(detail="Incorrect username or password")
         return await AuthService.generate_token(user)
 
     @staticmethod
@@ -53,22 +48,18 @@ class AuthService:
 
     @staticmethod
     async def get_current_user_from_token(token: str = Depends(oauth2_scheme)):
-        exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-        )
         try:
             payload = jwt.decode(
                 token, setting.SECRET_KEY, algorithms=[setting.ALGORITHM]
             )
             username: str = payload.get("sub")
             if username is None:
-                raise exception
+                raise AutorizingException()
         except JWTError:
-            raise exception
+            raise AutorizingException()
         user = await UserService.get_user_by_username_for_auth(username=username)
         if user is None:
-            raise exception
+            raise AutorizingException()
         return user
 
     @staticmethod

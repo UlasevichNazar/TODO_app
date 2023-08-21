@@ -4,24 +4,22 @@ from uuid import UUID
 
 from fastapi import APIRouter
 from fastapi import Depends
-from fastapi import HTTPException
-from fastapi import Request
-from fastapi import Response
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import UJSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from app.api.v1.user import get_user_by_id
-from app.exceptions.exceptions import ExceptionService
+from app.exceptions.exceptions import EmptyParametersException
+from app.exceptions.exceptions import ObjectNotFoundException
+from app.exceptions.exceptions import PermissionDeniedException
 from app.models.user import User
 from app.permissions.todo_list import TodoListPermissionsService
 from app.schemas.todo_list import CreateTodoListSchema
-from app.schemas.todo_list import DeleteTodoListSchema
 from app.schemas.todo_list import ShowTodoListForCreateSchema
 from app.schemas.todo_list import ShowTodoListSchema
 from app.schemas.todo_list import UpdateTodoListSchema
 from app.services.auth import AuthService
 from app.services.todo_list import TodoListService
-
 
 logger = getLogger(__name__)
 
@@ -36,12 +34,10 @@ async def create_todo_list(
     try:
         user_data = await get_user_by_id(current_user.id, current_user)
         return await TodoListService.create_new_todo_list(body, user_data)
-
-    except IntegrityError as err:
-        error_message = await ExceptionService.get_error_message("".join(err.args))
-        raise HTTPException(status_code=503, detail=f"{error_message}")
-    except RequestValidationError as exc:
-        raise HTTPException(status_code=422, detail=f"Wrong data: {exc}")
+    except IntegrityError:
+        raise
+    except RequestValidationError:
+        raise
 
 
 @todo_list_router.get("/", response_model=List[ShowTodoListSchema])
@@ -50,9 +46,8 @@ async def get_all_lists(
 ):
     try:
         return await TodoListService.get_all_todo_lists(current_user)
-    except IntegrityError as err:
-        error_message = await ExceptionService.get_error_message("".join(err.args))
-        raise HTTPException(status_code=503, detail=f"{error_message}")
+    except IntegrityError:
+        raise
 
 
 @todo_list_router.get("/{list_id}", response_model=ShowTodoListSchema)
@@ -62,11 +57,13 @@ async def get_todo_list_by_id(
     todo_list = await TodoListService.get_todo_list(list_id)
 
     if todo_list is None:
-        raise HTTPException(status_code=404, detail="Todo List is not found")
+        raise ObjectNotFoundException(
+            detail=f"Todo List with id - {list_id} is not found."
+        )
     if not await TodoListPermissionsService.check_user_permissions(
         todo_list=todo_list, current_user=current_user
     ):
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise PermissionDeniedException()
     return todo_list
 
 
@@ -78,42 +75,43 @@ async def update_todo_list(
 ):
     updated_params = body.model_dump(exclude_unset=True)
     if updated_params == {}:
-        raise HTTPException(
-            status_code=422,
-            detail="At least one parameter for task update info should be provided",
-        )
+        raise EmptyParametersException()
     todo_list = await TodoListService.get_todo_list(list_id)
     if todo_list is None:
-        raise HTTPException(
-            status_code=404, detail=f"Todo List with id - {list_id} is not found."
+        raise ObjectNotFoundException(
+            detail=f"Todo List with id - {list_id} is not found."
         )
     if not await TodoListPermissionsService.check_user_permissions(
         todo_list=todo_list, current_user=current_user
     ):
-        raise HTTPException(status_code=403, detail="Forbidden.")
+        raise PermissionDeniedException()
     try:
         await TodoListService.update_list(updated_params, todo_list)
-    except IntegrityError as err:
-        error_message = await ExceptionService.get_error_message("".join(err.args))
-        raise HTTPException(status_code=503, detail=f"{error_message}")
-    except RequestValidationError as exc:
-        return await ExceptionService.validation_exception_handler(Request, exc)
+    except IntegrityError:
+        raise
+    except RequestValidationError:
+        raise
     else:
-        return Response("Todo List successfully updated", status_code=201)
+        return UJSONResponse(
+            content={"detail": "Todo List successfully updated"}, status_code=201
+        )
 
 
-@todo_list_router.delete("/{list_id}", response_model=DeleteTodoListSchema)
+@todo_list_router.delete("/{list_id}")
 async def delete_todo_list(
     list_id: UUID, current_user: User = Depends(AuthService.get_current_user_from_token)
-) -> DeleteTodoListSchema:
+):
     list_for_deletion = await TodoListService.get_todo_list(list_id)
     if list_for_deletion is None:
-        raise HTTPException(
-            status_code=404, detail=f"TodoList with {list_id} is not found."
+        raise ObjectNotFoundException(
+            detail=f"Todo List with id - {list_id} is not found."
         )
     if not await TodoListPermissionsService.check_user_permissions(
         todo_list=list_for_deletion, current_user=current_user
     ):
-        raise HTTPException(status_code=403, detail="Forbidden.")
-    deleted_todo_list = await TodoListService.deleting_todo_list(list_id)
-    return DeleteTodoListSchema(deleted_todo_list_id=deleted_todo_list)
+        raise PermissionDeniedException()
+    deleted_todo_list = await TodoListService.deleting_todo_list(list_for_deletion)
+    if deleted_todo_list is None:
+        return UJSONResponse(
+            content={"detail": "Todo List was deleted successfully."}, status_code=200
+        )

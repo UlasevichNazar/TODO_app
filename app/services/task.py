@@ -14,11 +14,11 @@ from database.database import async_session
 
 class TaskService:
     @staticmethod
-    async def create_new_task(body: CreateTaskSchema) -> ShowTaskSchema:
+    async def create_new_task(body: CreateTaskSchema) -> Task:
         async with async_session() as session:
             new_task = TaskRepository(session)
             task = await new_task.create_new_task(body)
-            session.commit()
+            await session.commit()
             return task
 
     @staticmethod
@@ -48,13 +48,13 @@ class TaskService:
             updated_task = await updating_task.updating_task_by_user(
                 task, **updated_params
             )
-            session.commit()
+            await session.commit()
             return updated_task
 
     @staticmethod
-    async def deleting_task(task_id: UUID) -> Optional[UUID]:
+    async def deleting_task(task: Task) -> None:
         async with async_session() as session:
             task_repo = TaskRepository(session)
-            deleting_task_id = await task_repo.deleting_task_by_user(task_id)
-            session.commit()
+            deleting_task_id = await task_repo.deleting_task_by_user(task)
+            await session.commit()
             return deleting_task_id

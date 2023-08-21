@@ -1,3 +1,3 @@
 #!/bin/bash
 
-uvicorn app.main:app --host ${FASTAPI_HOST} --port ${FASTAPI_PORT} --reload
+uvicorn app.main:init_app --host ${FASTAPI_HOST} --port ${FASTAPI_PORT} --reload

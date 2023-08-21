@@ -29,5 +29,5 @@ class TodoListRepository(BaseRepository):
     ) -> Result[ToDoList]:
         return await self._update(ToDoList, instance, kwargs)
 
-    async def deleting_todo(self, list_id: UUID) -> Optional[UUID]:
-        return await self._delete(ToDoList, list_id)
+    async def deleting_todo(self, todo_list: ToDoList) -> None:
+        return await self._delete(todo_list)

@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
@@ -67,6 +66,7 @@ class ShowTodoListSchema(TunedModel):
         }
     }
 
+    @classmethod
     @field_validator("created_at", "updated_at")
     def validate_created_at(cls, value):
         if isinstance(value, datetime):
@@ -81,17 +81,6 @@ class UpdateTodoListSchema(TunedModel):
             "example": {
                 "name": "todo_list",
                 "description": "your description",
-            }
-        }
-    }
-
-
-class DeleteTodoListSchema(TunedModel):
-    deleted_todo_list_id: uuid.UUID
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "deleted_todo_list_id": "df448879-cfe8-46e9-a2v2-13ac4679e47d",
             }
         }
     }

@@ -1,13 +1,12 @@
 import re
 import uuid
-from typing import List
 from typing import Optional
 
-from fastapi import HTTPException
 from pydantic import EmailStr
 from pydantic import Field
 from pydantic import field_validator
 
+from app.exceptions.exceptions import EmptyParametersException
 from app.schemas.base import TunedModel
 
 LETTER_MATCH_PATTERN = re.compile(r"^[a-zA-Zа-яА-Я\-]+$")
@@ -27,11 +26,12 @@ class CreateUserSchema(TunedModel):
         }
     }
 
+    @classmethod
     @field_validator("username")
     def validate_name(cls, value):
         if not LETTER_MATCH_PATTERN.match(value):
-            raise HTTPException(
-                status_code=422, detail="Username should contains only letters"
+            raise EmptyParametersException(
+                detail="Username should contains only letters"
             )
         return value
 
@@ -58,7 +58,7 @@ class ShowAdminSchema(TunedModel):
     username: str
     email: EmailStr
     is_active: bool
-    roles: List[str]
+    roles: str
     model_config = {
         "json_schema_extra": {
             "example": {
@@ -84,21 +84,11 @@ class UpdateUserRequestSchema(TunedModel):
         }
     }
 
+    @classmethod
     @field_validator("username")
     def validate_name(cls, value):
         if not LETTER_MATCH_PATTERN.match(value):
-            raise HTTPException(
-                status_code=422, detail="Username should contains only letters"
+            raise EmptyParametersException(
+                detail="Username should contains only letters"
             )
         return value
-
-
-class DeleteUserSchema(TunedModel):
-    delete_user_id: uuid.UUID
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "delete_user_id": "df428874-tfe8-46e9-a2v2-13ac4679e47d",
-            }
-        }
-    }

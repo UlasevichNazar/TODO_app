@@ -32,5 +32,5 @@ class User(AbstractBaseModel):
         "User role", Enum(Roles), nullable=False, default=Roles.ROLE_USER
     )
     todo_lists: Mapped[List["ToDoList"]] = relationship(
-        "ToDoList", back_populates="user"
+        "ToDoList", back_populates="user", cascade="all, delete-orphan"
     )

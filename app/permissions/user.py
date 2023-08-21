@@ -1,5 +1,4 @@
-from fastapi import HTTPException
-
+from app.exceptions.exceptions import PermissionDeniedException
 from app.models.user import Roles
 from app.models.user import User
 
@@ -14,9 +13,5 @@ class UserPermissionsService:
             return True
 
         if Roles.ROLE_ADMIN in target_user.roles:
-            raise HTTPException(
-                status_code=406,
-                detail="You dont have any permissions to perform this action",
-            )
-
+            raise PermissionDeniedException()
         return False

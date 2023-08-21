@@ -1,4 +1,3 @@
-import uuid
 from typing import Optional
 from uuid import UUID
 
@@ -56,17 +55,6 @@ class UpdateTaskSchema(BaseModel):
                 "description": "we should to create somethings",
                 "status": "In progress",
                 "todo_list_id": "gf448879-cfe8-56e9-a2c2-11ac4e79e37d",
-            }
-        }
-    }
-
-
-class DeleteTaskSchema(TunedModel):
-    deleted_task_id: uuid.UUID
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "deleted_task_id": "df448879-cfe8-46e9-a2v2-13ac4679e47d",
             }
         }
     }

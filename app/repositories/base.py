@@ -2,10 +2,7 @@ from typing import Any
 from typing import Optional
 from typing import Type
 from typing import TypeVar
-from uuid import UUID
 
-from sqlalchemy import and_
-from sqlalchemy import delete
 from sqlalchemy import Result
 from sqlalchemy import select
 from sqlalchemy import update
@@ -40,9 +37,7 @@ class BaseRepository:
         await self.session.flush()
         return res
 
-    async def _delete(self, model: Type[Entity], instance_id: UUID) -> Optional[UUID]:
-        res = await self.session.execute(
-            delete(model).where(and_(model.id == instance_id)).returning(model.id)
-        )
-        deleted_entity = res.scalar()
-        return deleted_entity
+    async def _delete(self, instance) -> None:
+        res = await self.session.delete(instance)
+        await self.session.flush()
+        return res

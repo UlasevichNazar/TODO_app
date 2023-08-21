@@ -9,8 +9,6 @@ from app.models.user import Roles
 from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.user import CreateUserSchema
-from app.schemas.user import ShowAdminSchema
-from app.schemas.user import ShowUserSchema
 from app.utils.password_hasher import PasswordService
 from database.database import async_session
 
@@ -41,11 +39,11 @@ class UserService:
             return await user.get_user_by_username(username=username)
 
     @staticmethod
-    async def create_new_user(body: CreateUserSchema) -> ShowUserSchema:
+    async def create_new_user(body: CreateUserSchema) -> User:
         async with async_session() as session:
             user = await UserService._create_user(values=body)
             creation_user = await UserRepository(session).create_user(user)
-            session.commit()
+            await session.commit()
             return creation_user
 
     @staticmethod
@@ -58,17 +56,17 @@ class UserService:
         return new_user
 
     @staticmethod
-    async def create_admin(body: CreateUserSchema) -> ShowAdminSchema:
+    async def create_admin(body: CreateUserSchema) -> User:
         async with async_session() as session:
             user = await UserService._create_admin_user(values=body)
             creation_user = await UserRepository(session).create_user(user)
-            session.commit()
+            await session.commit()
             return creation_user
 
     @staticmethod
     async def _create_admin_user(values: CreateUserSchema) -> User:
         values_for_create = values.model_dump()
-        values_for_create["roles"] = [Roles.ROLE_ADMIN]
+        values_for_create["roles"] = Roles.ROLE_ADMIN
         values_for_create["password"] = PasswordService.get_password_hash(
             values.password
         )
@@ -85,9 +83,9 @@ class UserService:
             return updated_user
 
     @staticmethod
-    async def deleting_user(user_id: UUID) -> Optional[UUID]:
+    async def deleting_user(user: User) -> None:
         async with async_session() as session:
             deleting_user = UserRepository(session)
-            deleting_user_id = await deleting_user.delete_user(user_id=user_id)
-            session.commit()
-            return deleting_user_id
+            deleting_user_obj = await deleting_user.delete_user(user=user)
+            await session.commit()
+            return deleting_user_obj
